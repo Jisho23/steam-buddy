@@ -1,4 +1,6 @@
  Steam Buddy is a simple app that takes two steam ID and compares libraries.
+ This was a small project created to practice/implement a small express server
+ and multiple promise fulfillment through Promise.all.
 
  To Run:
 
