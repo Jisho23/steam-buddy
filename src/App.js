@@ -36,6 +36,7 @@ class App extends Component {
 
   handleSubmit = e => {
     e.preventDefault();
+
     const url1 = `http://localhost:4000/steam/user/${this.state.user1
       .id}/games`;
     const url2 = `http://localhost:4000/steam/user/${this.state.user2
@@ -46,16 +47,45 @@ class App extends Component {
         this.setState({
           user1: {
             id: this.state.user1.id,
-            library: userGames[0].response.games
+            library: userGames[0].response.games.sort(function(game1, game2) {
+              return game2.playtime_forever - game1.playtime_forever;
+            })
           },
           user2: {
             id: this.state.user2.id,
-            library: userGames[1].response.games
+            library: userGames[1].response.games.sort(function(game1, game2) {
+              return game2.playtime_forever - game1.playtime_forever;
+            })
           }
         });
       })
-      .then(() => this.findCommonGames());
+      .then(() => {
+        this.findCommonGames();
+        this.fetchUserInfo();
+      });
   };
+
+  fetchUserInfo() {
+    const url1 = `http://localhost:4000/steam/user/${this.state.user1.id}/info`;
+    const url2 = `http://localhost:4000/steam/user/${this.state.user2.id}/info`;
+    const urls = [url1, url2];
+    Promise.all(
+      urls.map(url => fetch(url).then(resp => resp.json()))
+    ).then(usersInfo => {
+      this.setState({
+        user1: {
+          id: this.state.user1.id,
+          library: this.state.user1.library,
+          info: usersInfo[0].response.players[0]
+        },
+        user2: {
+          id: this.state.user2.id,
+          library: this.state.user2.library,
+          info: usersInfo[1].response.players[0]
+        }
+      });
+    });
+  }
 
   findCommonGames = () => {
     let user1GameIds = this.state.user1.library;
@@ -68,10 +98,6 @@ class App extends Component {
   };
 
   fetchGameInfo = gameIds => {
-    gameIds = gameIds.sort(function(game1, game2) {
-      return game2.playtime_forever - game1.playtime_forever;
-    });
-    console.log(gameIds);
     fetch(`http://localhost:4000/steam/game/${gameIds[0].appid}`)
       .then(res => res.json())
       .then(json => this.setState({ mostPlayed: json[gameIds[0].appid] }));
@@ -84,7 +110,7 @@ class App extends Component {
           <Container>
             <Header inverted textAlign={"center"}>
               <h1 className="App-title">
-                <Icon loading color="white" name="steam square" />Steam Buddy
+                <Icon loading name="steam square" />Steam Buddy
               </h1>
               <h3>How compatible is your library to another users'?</h3>
             </Header>
@@ -115,6 +141,28 @@ class App extends Component {
                     </Button>
                   </Form>
                 </Segment>
+                {this.state.user1.info && this.state.user2.info ? (
+                  <Segment>
+                    <Card.Group itemsPerRow={2}>
+                      <Card>
+                        <Image src={this.state.user1.info.avatarfull} />
+                        <Card.Content>
+                          <Card.Header>
+                            You: {this.state.user1.info.personaname}
+                          </Card.Header>
+                        </Card.Content>
+                      </Card>
+                      <Card>
+                        <Image src={this.state.user2.info.avatarfull} />
+                        <Card.Content>
+                          <Card.Header>
+                            Other User: {this.state.user2.info.personaname}
+                          </Card.Header>
+                        </Card.Content>
+                      </Card>
+                    </Card.Group>
+                  </Segment>
+                ) : null}
               </Grid.Column>
               <Grid.Column>
                 {this.state.commonGames !== "" ? (
@@ -125,7 +173,7 @@ class App extends Component {
                     </Segment>
                     {this.state.mostPlayed.data ? (
                       <Segment>
-                        <p>Your best matches (by total game time)...</p>
+                        <p>Your best match (by total game time)...</p>
                         <Card>
                           <Image
                             src={this.state.mostPlayed.data.header_image}

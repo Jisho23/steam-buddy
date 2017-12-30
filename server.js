@@ -30,6 +30,20 @@ app.get("/steam/game/:appid", function(httpRequest, httpResponse) {
   });
 });
 
+app.get("/steam/user/:appid/info", function(httpRequest, httpResponse) {
+  var url =
+    "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/" +
+    "?key=" +
+    constants.KEY +
+    "&steamids=" +
+    httpRequest.params.appid +
+    "&format=json";
+  request.get(url, function(error, steamHttpResponse, steamHttpBody) {
+    httpResponse.setHeader("Content-Type", "application/json");
+    httpResponse.send(steamHttpBody);
+  });
+});
+
 app.use("/", express.static("public"));
 
 var bodyParser = require("body-parser");
