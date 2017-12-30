@@ -1,4 +1,4 @@
-var constants = require("constants");
+var constants = require("./constants");
 var express = require("express");
 
 var app = express();
@@ -9,7 +9,7 @@ app.get("/steam/user/:appid/games", function(httpRequest, httpResponse) {
   var url =
     "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/" +
     "?key=" +
-    constants.FOO +
+    constants.KEY +
     "&steamid=" +
     httpRequest.params.appid +
     "&format=json";
