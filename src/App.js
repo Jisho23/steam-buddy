@@ -12,7 +12,7 @@ import {
 } from "semantic-ui-react";
 import "./App.css";
 
-// test with these ID: 76561197963372904 76561197981718236
+// test with these ID: 76561198002334817 76561197981718236
 
 class App extends Component {
   constructor() {
